@@ -1,0 +1,15 @@
+Options +FollowSymLinks
+DirectoryIndex index.php
+IndexIgnore */*
+RewriteEngine on
+
+# if a directory or a file exists, use it directly
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# otherwise forward it to index.php
+RewriteRule . index.php
+AddDefaultCharset utf-8
+
+RewriteCond %{HTTP_HOST} ^testapp.test1.ru
+RewriteRule (.*) http://www.testapp.test1.ru/$1 [R=301,L]
