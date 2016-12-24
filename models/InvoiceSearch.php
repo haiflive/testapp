@@ -5,12 +5,12 @@ namespace app\models;
 use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
-use app\models\BillingOperations;
+use app\models\Invoice;
 
 /**
- * BillingOperationsSearch represents the model behind the search form about `app\models\BillingOperations`.
+ * InvoiceSearch represents the model behind the search form about `app\models\Invoice`.
  */
-class BillingOperationsSearch extends BillingOperations
+class InvoiceSearch extends Invoice
 {
     /**
      * @inheritdoc
@@ -18,7 +18,7 @@ class BillingOperationsSearch extends BillingOperations
     public function rules()
     {
         return [
-            [['id', 'user_id', 'reciver_id'], 'integer'],
+            [['id', 'owner_id', 'for_user_id', 'status'], 'integer'],
             [['amount'], 'number'],
         ];
     }
@@ -41,7 +41,7 @@ class BillingOperationsSearch extends BillingOperations
      */
     public function search($params)
     {
-        $query = BillingOperations::find();
+        $query = Invoice::find();
 
         // add conditions that should always apply here
 
@@ -60,9 +60,10 @@ class BillingOperationsSearch extends BillingOperations
         // grid filtering conditions
         $query->andFilterWhere([
             'id' => $this->id,
-            'user_id' => $this->user_id,
+            'owner_id' => $this->owner_id,
+            'for_user_id' => $this->for_user_id,
+            'status' => $this->status,
             'amount' => $this->amount,
-            'reciver_id' => $this->reciver_id,
         ]);
 
         return $dataProvider;

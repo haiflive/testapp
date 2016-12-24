@@ -12,7 +12,9 @@ use app\models\Billing;
  * @property integer $id
  * @property integer $user_id
  * @property string $amount
+ * @property integer $reciver_id
  *
+ * @property User $reciver
  * @property User $user
  */
 class BillingOperations extends \yii\db\ActiveRecord
@@ -32,9 +34,10 @@ class BillingOperations extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['user_id', 'login', 'amount'], 'required'],
-            [['user_id'], 'integer'],
+            [['user_id', 'reciver_id', 'amount', 'login'], 'required'],
+            [['user_id', 'reciver_id'], 'integer'],
             [['amount'], 'number', 'min'=>0],
+            [['reciver_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['reciver_id' => 'id']],
             [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['user_id' => 'id']],
         ];
     }
@@ -48,13 +51,22 @@ class BillingOperations extends \yii\db\ActiveRecord
             'id' => 'ID',
             'user_id' => 'User ID',
             'amount' => 'Amount',
+            'reciver_id' => 'Reciver ID',
         ];
     }
 
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getUser()
+    public function getReciverUser()
+    {
+        return $this->hasOne(User::className(), ['id' => 'reciver_id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getSenderUser()
     {
         return $this->hasOne(User::className(), ['id' => 'user_id']);
     }
@@ -70,7 +82,8 @@ class BillingOperations extends \yii\db\ActiveRecord
                 $user = User::userRegistration($this->login);
             }
             
-            $this->user_id = $user->id;
+            $this->user_id = Yii::$app->user->id;
+            $this->reciver_id = $user->id;
         }
         
         return parent::beforeValidate();
@@ -80,31 +93,30 @@ class BillingOperations extends \yii\db\ActiveRecord
     {
         //!? add check pass himself
         
-        //-- increment user billing
-        $user = $this->getUser()->one();
-        $userBilling = $user->getBilling()->one();
+        //-- increment reciver user billing
+        $userReciver = $this->getReciverUser()->one();
+        $userBilling = $userReciver->getBilling()->one();
         
         // if user seel not have billing crete it
         if($userBilling === null) {
             $userBilling = new Billing;
-            $userBilling->user_id = $user->id;
+            $userBilling->user_id = $userReciver->id;
             $userBilling->balance = 0;
         }
         
-        //! it would bee better use transactions, or async SQL command
-        $userBilling->balance = $userBilling->balance + $this->amount;
-        
-        
         //-- decrement sender user billing
-        $senderBilling = Yii::$app->user->identity->getBilling()->one();
+        $userSender = $this->getSenderUser()->one();
+        $senderBilling = $userSender->getBilling()->one();
         
         // if sender seel not have billing crete it
         if($senderBilling === null) {
             $senderBilling = new Billing;
-            $senderBilling->user_id = $user->id;
+            $senderBilling->user_id = $userSender->id;
             $senderBilling->balance = 0;
         }
         
+        //! it would bee better use transactions, or async SQL command
+        $userBilling->balance = $userBilling->balance + $this->amount;
         $senderBilling->balance = $senderBilling->balance - $this->amount;
         
         $userBilling->save();

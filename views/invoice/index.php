@@ -4,19 +4,19 @@ use yii\helpers\Html;
 use yii\grid\GridView;
 
 /* @var $this yii\web\View */
-/* @var $searchModel app\models\BillingOperationsSearch */
+/* @var $searchModel app\models\InvoiceSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = 'Billing Operations';
+$this->title = 'Invoices';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
-<div class="billing-operations-index">
+<div class="invoice-index">
 
     <h1><?= Html::encode($this->title) ?></h1>
     <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
 
     <p>
-        <?= Html::a('Create Billing Operations', ['create'], ['class' => 'btn btn-success']) ?>
+        <?= Html::a('Create Invoice', ['create'], ['class' => 'btn btn-success']) ?>
     </p>
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
@@ -25,9 +25,10 @@ $this->params['breadcrumbs'][] = $this->title;
             ['class' => 'yii\grid\SerialColumn'],
 
             'id',
-            'user_id',
+            'owner_id',
+            'for_user_id',
+            'status',
             'amount',
-            'reciver_id',
 
             ['class' => 'yii\grid\ActionColumn'],
         ],

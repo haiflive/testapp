@@ -8,6 +8,7 @@
 -- > php yii migrate/create create_billing_table --fields="user_id:integer:notNull:foreignKey(user),balance:decimal(18,4):defaultValue(0)"
 -- > php yii migrate/create create_billing_operations_table --fields="user_id:integer:notNull:foreignKey(user),amount:decimal(18,4):notNull"
 -- > php yii migrate/create create_invoice_table --fields="owner_id:integer:notNull:foreignKey(user),for_user_id:integer:notNull:foreignKey(user),status:integer:defaultValue(1),amount:decimal(18,4):notNull"
+-- > php yii migrate/create add_position_column_to_billing_operations_table --fields="reciver_id:integer:notNull:foreignKey(user)"
 --
 
 -- up migratins
@@ -34,6 +35,7 @@ CREATE TABLE IF NOT EXISTS `billing` (
 CREATE TABLE IF NOT EXISTS `billing_operations` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL COMMENT 'id пользователя',
+  `reciver_id` int(11) NOT NULL COMMENT 'id получателя',
   `amount` decimal(18,4) NOT NULL COMMENT 'положительный - зачисление, отрицательный списание',
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),

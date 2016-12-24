@@ -18,6 +18,8 @@ use Yii;
  */
 class Invoice extends \yii\db\ActiveRecord
 {
+    public $login;
+    
     /**
      * @inheritdoc
      */
@@ -32,9 +34,9 @@ class Invoice extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['owner_id', 'for_user_id', 'amount'], 'required'],
+            [['owner_id', 'for_user_id', 'amount', 'login'], 'required'],
             [['owner_id', 'for_user_id', 'status'], 'integer'],
-            [['amount'], 'number'],
+            [['amount'], 'number', 'min'=>0],
             [['for_user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['for_user_id' => 'id']],
             [['owner_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['owner_id' => 'id']],
         ];
@@ -68,5 +70,23 @@ class Invoice extends \yii\db\ActiveRecord
     public function getOwner()
     {
         return $this->hasOne(User::className(), ['id' => 'owner_id']);
+    }
+    
+    public function beforeValidate()
+	{
+        if(!empty($this->login) && $this->getIsNewRecord()) {
+            // find user ID
+            $user = User::findByUsername($this->login);
+            
+            // register user if not exists
+            if ($user === null) {
+                $user = User::userRegistration($this->login);
+            }
+            
+            $this->owner_id = Yii::$app->user->id;
+            $this->for_user_id = $user->id;
+        }
+        
+        return parent::beforeValidate();
     }
 }
