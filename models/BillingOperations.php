@@ -34,7 +34,7 @@ class BillingOperations extends \yii\db\ActiveRecord
         return [
             [['user_id', 'login', 'amount'], 'required'],
             [['user_id'], 'integer'],
-            [['amount'], 'number'],
+            [['amount'], 'number', 'min'=>0],
             [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['user_id' => 'id']],
         ];
     }
@@ -78,21 +78,37 @@ class BillingOperations extends \yii\db\ActiveRecord
     
     public function beforeSave($insert)
     {
-        // increment user billing
+        //!? add check pass himself
+        
+        //-- increment user billing
         $user = $this->getUser()->one();
         $userBilling = $user->getBilling()->one();
         
         // if user seel not have billing crete it
-        if(!$userBilling) {
+        if($userBilling === null) {
             $userBilling = new Billing;
             $userBilling->user_id = $user->id;
             $userBilling->balance = 0;
         }
         
-        // it would bee better use transactions, and async SQL request
+        //! it would bee better use transactions, or async SQL command
         $userBilling->balance = $userBilling->balance + $this->amount;
         
+        
+        //-- decrement sender user billing
+        $senderBilling = Yii::$app->user->identity->getBilling()->one();
+        
+        // if sender seel not have billing crete it
+        if($senderBilling === null) {
+            $senderBilling = new Billing;
+            $senderBilling->user_id = $user->id;
+            $senderBilling->balance = 0;
+        }
+        
+        $senderBilling->balance = $senderBilling->balance - $this->amount;
+        
         $userBilling->save();
+        $senderBilling->save();
         
         return parent::beforeSave($insert);
     }
