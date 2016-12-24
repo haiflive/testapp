@@ -42,7 +42,11 @@ AppAsset::register($this);
             Yii::$app->user->isGuest ? (
                 ['label' => 'Login', 'url' => ['/site/login']]
             ) : (
-                '<li>'
+                  '<li>'
+                . Html::a(Html::encode("User Panel"), ['user/view', 'id'=>Yii::$app->user->id])
+                . '</li>'
+                
+                . '<li>'
                 . Html::beginForm(['/site/logout'], 'post')
                 . Html::submitButton(
                     'Logout (' . Yii::$app->user->identity->login . ')',

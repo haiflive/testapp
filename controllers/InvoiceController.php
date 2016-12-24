@@ -23,10 +23,10 @@ class InvoiceController extends Controller
         return [
             'access' => [
                 'class' => AccessControl::className(),
-                'only' => ['create'],
+                'only' => ['create', 'accept', 'reject'],
                 'rules' => [
                     [
-                        'actions' => ['create'],
+                        'actions' => ['create', 'accept', 'reject'],
                         'allow' => true,
                         'roles' => ['@'],
                     ],
@@ -78,7 +78,8 @@ class InvoiceController extends Controller
         $model = new Invoice();
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
+            return $this->redirect(['user/view', 'id'=>Yii::$app->user->id]);
+            // return $this->redirect(['view', 'id' => $model->id]);
         } else {
             return $this->render('create', [
                 'model' => $model,
@@ -116,6 +117,32 @@ class InvoiceController extends Controller
         $this->findModel($id)->delete();
 
         return $this->redirect(['index']);
+    }
+    
+    
+    /**
+     * Accept an existing Invoice model.
+     * If acception is successful, the browser will be redirected to the 'index' page.
+     * @param integer $id
+     * @return mixed
+     */
+    public function actionAccept($id)
+    {
+        //? check exception
+        $this->findModel($id)->accept();
+        return $this->redirect(['user/view', 'id'=>Yii::$app->user->id]);
+    }
+    
+    /**
+     * Accept an existing Invoice model.
+     * If acception is successful, the browser will be redirected to the 'index' page.
+     * @param integer $id
+     * @return mixed
+     */
+    public function actionReject($id)
+    {
+        $this->findModel($id)->reject();
+        return $this->redirect(['user/view', 'id'=>Yii::$app->user->id]);
     }
 
     /**

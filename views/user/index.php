@@ -16,9 +16,10 @@ $this->params['breadcrumbs'][] = $this->title;
     <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
 
     <p>
-        <?= Html::a('Registration', ['create'], ['class' => 'btn btn-success']) ?>
         <?php if(!Yii::$app->user->isGuest): ?>
             <?= Html::a('Pass Amount', ['billing-operations/create'], ['class' => 'btn btn-success']) ?>
+        <?php else: ?>
+            <?= Html::a('Registration', ['create'], ['class' => 'btn btn-success']) ?>
         <?php endif; ?>
     </p>
     <?= GridView::widget([

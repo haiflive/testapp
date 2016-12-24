@@ -42,6 +42,10 @@ class BillingOperationsSearch extends BillingOperations
     public function search($params)
     {
         $query = BillingOperations::find();
+        
+        // $searchMlBillingOperations->user_id = Yii::$app->user->id;
+        $query->where(['user_id' => Yii::$app->user->id]);
+        $query->orWhere(['reciver_id' => Yii::$app->user->id]);
 
         // add conditions that should always apply here
 

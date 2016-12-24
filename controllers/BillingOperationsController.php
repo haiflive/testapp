@@ -78,7 +78,8 @@ class BillingOperationsController extends Controller
         $model = new BillingOperations();
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
+            return $this->redirect(['user/view', 'id'=>Yii::$app->user->id]);
+            // return $this->redirect(['view', 'id' => $model->id]);
         } else {
             return $this->render('create', [
                 'model' => $model,

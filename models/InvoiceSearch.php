@@ -42,7 +42,10 @@ class InvoiceSearch extends Invoice
     public function search($params)
     {
         $query = Invoice::find();
-
+        
+        // $searchModelInvoiceSearch->for_user_id = Yii::$app->user->id;
+        $query->where(['for_user_id' => Yii::$app->user->id]);
+        $query->orWhere(['owner_id' => Yii::$app->user->id]);
         // add conditions that should always apply here
 
         $dataProvider = new ActiveDataProvider([

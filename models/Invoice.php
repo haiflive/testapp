@@ -3,6 +3,7 @@
 namespace app\models;
 
 use Yii;
+use yii\web\ForbiddenHttpException;
 
 /**
  * This is the model class for table "invoice".
@@ -20,6 +21,22 @@ class Invoice extends \yii\db\ActiveRecord
 {
     public $login;
     
+    const STATUS_NEW = 1;
+    const STATUS_ACCEPTED = 2;
+    const STATUS_REJECTED_BY_SENDER = 3;
+    const STATUS_REJECTED_BY_RECEIVER = 4;
+    
+    const SCENARIO_ACCEPT = 'accept';
+    const SCENARIO_REJECT = 'reject';
+    
+    public function scenarios()
+    {
+        $scenarios = parent::scenarios();
+        $scenarios[self::SCENARIO_ACCEPT] = ['login'];
+        $scenarios[self::SCENARIO_REJECT] = ['login'];
+        return $scenarios;
+    }
+    
     /**
      * @inheritdoc
      */
@@ -34,7 +51,8 @@ class Invoice extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['owner_id', 'for_user_id', 'amount', 'login'], 'required'],
+            [['owner_id', 'for_user_id', 'amount'], 'required'],
+            [['login'], 'required', 'on' => self::SCENARIO_DEFAULT],
             [['owner_id', 'for_user_id', 'status'], 'integer'],
             [['amount'], 'number', 'min'=>0],
             [['for_user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['for_user_id' => 'id']],
@@ -65,11 +83,66 @@ class Invoice extends \yii\db\ActiveRecord
     }
 
     /**
+     *  Invlice Initiator, user who send invoice
      * @return \yii\db\ActiveQuery
      */
     public function getOwner()
     {
         return $this->hasOne(User::className(), ['id' => 'owner_id']);
+    }
+    
+    /**
+     *  accept invoice
+     *  @return bool
+     */
+    public function accept()
+    {
+        if($this->status !== self::STATUS_NEW) // can accept only once
+            throw new ForbiddenHttpException;
+        
+        $this->scenario = self::SCENARIO_ACCEPT;
+        
+        // invoice can accept only user for whom this Invoice
+        if($this->for_user_id !== Yii::$app->user->id)
+            throw new ForbiddenHttpException;
+        
+        // pass money to invoice owner
+        $model = new BillingOperations();
+        
+        $model->user_id = Yii::$app->user->id;
+        $model->login = $this->getOwner()->one()->login;
+        $model->amount = $this->amount;
+        
+        $this->status = self::STATUS_ACCEPTED;
+        
+        //? transactions
+        return $this->save() && $model->save();
+    }
+    
+    /**
+     *  reject invoice
+     *  @return bool
+     */
+    public function reject()
+    {
+        if($this->status !== self::STATUS_NEW) // can reject only once
+            throw new ForbiddenHttpException;
+        
+        $this->scenario = self::SCENARIO_REJECT;
+            
+        if($this->for_user_id !== Yii::$app->user->id) {
+            $this->status = self::STATUS_REJECTED_BY_SENDER;
+            $this->save();
+            return true; // exit
+        }
+        
+        if($this->owner_id !== Yii::$app->user->id) {
+            $this->status = self::STATUS_REJECTED_BY_RECEIVER;
+            $this->save();
+            return true; // exit
+        }
+        
+        throw new ForbiddenHttpException;
     }
     
     public function beforeValidate()

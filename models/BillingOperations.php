@@ -73,6 +73,8 @@ class BillingOperations extends \yii\db\ActiveRecord
     
     public function beforeValidate()
 	{
+        //!? add check pass himself, it can create balance async error
+        
         if(!empty($this->login) && $this->getIsNewRecord()) {
             // find user ID
             $user = User::findByUsername($this->login);
@@ -91,8 +93,6 @@ class BillingOperations extends \yii\db\ActiveRecord
     
     public function beforeSave($insert)
     {
-        //!? add check pass himself
-        
         //-- increment reciver user billing
         $userReciver = $this->getReciverUser()->one();
         $userBilling = $userReciver->getBilling()->one();

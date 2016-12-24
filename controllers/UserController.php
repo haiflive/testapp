@@ -69,12 +69,12 @@ class UserController extends Controller
     {
         $searchMlBillingOperations = new BillingOperationsSearch();
         // default show only this user operations
-        $searchMlBillingOperations->user_id = Yii::$app->user->id;
+        // $searchMlBillingOperations->user_id = Yii::$app->user->id;
         $dataPBillingOperations = $searchMlBillingOperations->search([]/*Yii::$app->request->queryParams*/); //!
         
         $searchModelInvoiceSearch = new InvoiceSearch();
         // default show only this user list invoices to accept
-        $searchModelInvoiceSearch->for_user_id = Yii::$app->user->id;
+        // $searchModelInvoiceSearch->for_user_id = Yii::$app->user->id;
         $dataProviderInvoiceSearch = $searchModelInvoiceSearch->search([]/*Yii::$app->request->queryParams*/); //!
         
         return $this->render('view', [
