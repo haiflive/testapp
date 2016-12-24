@@ -10,7 +10,9 @@ use yii\widgets\ActiveForm;
 
 <div class="billing-operations-form">
 
-    <?php $form = ActiveForm::begin(); ?>
+    <?php $form = ActiveForm::begin([
+        'id' => 'billing-operations-form',
+    ]); ?>
 
     <?= $form->field($model, 'login')->textInput() ?>
 

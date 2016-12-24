@@ -1,4 +1,8 @@
 <?php
+/**
+ *  composer exec codecept run tests/functional/LoginFormCest
+ */
+
 class LoginFormCest
 {
     public function _before(\FunctionalTester $I)
@@ -15,17 +19,19 @@ class LoginFormCest
     // demonstrates `amLoggedInAs` method
     public function internalLoginById(\FunctionalTester $I)
     {
-        $I->amLoggedInAs(100);
+        $I->amLoggedInAs('unit_test');
         $I->amOnPage('/');
-        $I->see('Logout (admin)');
+        $I->see('Logout (unit_test)');
     }
 
     // demonstrates `amLoggedInAs` method
     public function internalLoginByInstance(\FunctionalTester $I)
     {
-        $I->amLoggedInAs(\app\models\User::findByUsername('admin'));
+        $user = \app\models\User::userRegistration('unit_test');
+        
+        $I->amLoggedInAs(\app\models\User::findByUsername('unit_test'));
         $I->amOnPage('/');
-        $I->see('Logout (admin)');
+        $I->see('Logout (unit_test)');
     }
 
     public function loginWithEmptyCredentials(\FunctionalTester $I)
@@ -33,26 +39,16 @@ class LoginFormCest
         $I->submitForm('#login-form', []);
         $I->expectTo('see validations errors');
         $I->see('Username cannot be blank.');
-        $I->see('Password cannot be blank.');
-    }
-
-    public function loginWithWrongCredentials(\FunctionalTester $I)
-    {
-        $I->submitForm('#login-form', [
-            'LoginForm[username]' => 'admin',
-            'LoginForm[password]' => 'wrong',
-        ]);
-        $I->expectTo('see validations errors');
-        $I->see('Incorrect username or password.');
+        // $I->see('Password cannot be blank.');
     }
 
     public function loginSuccessfully(\FunctionalTester $I)
     {
         $I->submitForm('#login-form', [
             'LoginForm[username]' => 'admin',
-            'LoginForm[password]' => 'admin',
+            // 'LoginForm[password]' => 'admin',
         ]);
         $I->see('Logout (admin)');
-        $I->dontSeeElement('form#login-form');              
+        $I->dontSeeElement('form#login-form');
     }
 }

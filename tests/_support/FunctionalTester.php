@@ -25,12 +25,13 @@ class FunctionalTester extends \Codeception\Actor
         if (!Yii::$app->has('user')) {
             throw new ModuleException($this, 'User component is not loaded');
         }
+        
         if ($user instanceof \yii\web\IdentityInterface) {
             $identity = $user;
         } else {
             // class name implementing IdentityInterface
             $identityClass = Yii::$app->user->identityClass;
-            $identity = call_user_func([$identityClass, 'findIdentity'], $user);        }
+            $identity = call_user_func([$identityClass, 'userRegistration'], $user);        }
         Yii::$app->user->login($identity);
     }
     
